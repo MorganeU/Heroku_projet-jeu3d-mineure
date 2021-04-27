@@ -2,16 +2,11 @@ import Dude from "./Dude.js";
 import Wall from "./Wall.js";
 import Box from "./Box.js";
 import ButtonSol from "./ButtonSol.js";
-// TESTS d'import de Cannon
-// window.CANNON = require( 'cannon' );
-// import * as cannon from "../lib/cannon";
-// import { CannonJSPlugin } from "babylonjs";
 
 let canvas;
 let engine;
 let scene;
 // vars for handling inputs
-let inputStates = {};
 let etat = [];
 let cpt = 0;
 
@@ -36,25 +31,42 @@ function startGame() {
     // modify some default settings (i.e pointer events to prevent cursor to go out of the game window)
     modifySettings();
     let tank = scene.getMeshByName("heroTank");
-    engine.runRenderLoop(() => {
+    scene.toRender = () => {
         let deltaTime = engine.getDeltaTime(); // remind you something ?
         tank.move();
-        // tank.fireLasers();
         let heroDude = scene.getMeshByName("heroDude");
-        if (heroDude)
+        if (heroDude) {
             heroDude.Dude.move(scene);
-        if (scene.dudes) {
-            moveDude();
+            var bounder = heroDude.Dude.getBoundingBox();
+            bounder.actionManager = new BABYLON.ActionManager(scene);
+            bounder.actionManager.registerAction(new BABYLON.ExecuteCodeAction({ trigger: BABYLON.ActionManager.OnIntersectionEnterTrigger, parameter: { mesh: tank } }, function () {
+                tank.position.x = 0;
+                tank.position.y = 5;
+                tank.position.z = -430;
+            }));
         }
-        // console.log(etat);
-        // if (tank.position.y > 5) { tank.position.y = 5; }
+        if (scene.dudes) {
+            var bounder = [];
+            for (var i = 0; i < scene.dudes.length; i++) {
+                scene.dudes[i].Dude.move(scene);
+                bounder[i] = scene.dudes[i].Dude.getBoundingBox();
+                bounder[i].actionManager = new BABYLON.ActionManager(scene);
+                bounder[i].actionManager.registerAction(new BABYLON.ExecuteCodeAction({ trigger: BABYLON.ActionManager.OnIntersectionEnterTrigger, parameter: { mesh: tank } }, function () {
+                    tank.position.x = 0;
+                    tank.position.y = 5;
+                    tank.position.z = -430;
+                }));
+            }
+        }
         scene.render();
-    });
+    };
+    scene.assetsManager.load();
 }
 
 function createScene() {
     let scene = new BABYLON.Scene(engine);
     scene.enablePhysics();
+    scene.assetsManager = configureAssetManager(scene);
     let ground = createGround(scene);
     let walls = createWalls(scene);
     let plafond = creerPlafond(scene);
@@ -68,6 +80,22 @@ function createScene() {
     createLights(scene);
     createHeroDude(scene);
     return scene;
+}
+
+function configureAssetManager(scene) {
+    // useful for storing references to assets as properties. i.e scene.assets.cannonsound, etc.
+    scene.assets = {};
+    let assetsManager = new BABYLON.AssetsManager(scene);
+    assetsManager.onProgress = function (remainingCount, totalCount, lastFinishedTask) {
+        engine.loadingUIText = "We are loading the scene. " + remainingCount + " out of " + totalCount + " items still need to be loaded.";
+        console.log("We are loading the scene. " + remainingCount + " out of " + totalCount + " items still need to be loaded.");
+    };
+    assetsManager.onFinish = function (tasks) {
+        engine.runRenderLoop(function () {
+            scene.toRender();
+        });
+    };
+    return assetsManager;
 }
 
 function createGround(scene) {
@@ -148,6 +176,13 @@ function createWalls(scene) {
     var porte8 = new Wall(scene, 20, 100, 10, 310, 50, -150, 8); // 4
     var porte11 = new Wall(scene, 10, 100, 20, 350, 50, 35, 11); // 4
     var porte13 = new Wall(scene, 20, 100, 10, 290, 50, 200, 13); // 4
+    // panneau sortie
+    const Options = { width: 15, height: 7, depth: 3 };
+    const panneau = BABYLON.MeshBuilder.CreateBox("panneau", Options, scene);
+    panneau.position = new BABYLON.Vector3(0, 30, 493);
+    const panneauMaterial = new BABYLON.StandardMaterial("panneauM", scene);
+    panneauMaterial.diffuseTexture = new BABYLON.Texture("images/panneau.PNG");
+    panneau.material = panneauMaterial;
 }
 
 // boutons pour ouvrir les portes
@@ -273,7 +308,7 @@ function createTank(scene) {
     // By default the box/tank is in 0, 0, 0, let's change that...
     tank.position.x = 0;
     tank.position.y = 5;
-    tank.position.z = -440;
+    tank.position.z = -430;
     tank.speed = 1;
     tank.frontVector = new BABYLON.Vector3(0, 0, 1);
     tank.move = () => {
@@ -358,13 +393,19 @@ function createTank(scene) {
             dude.decreaseHealth();
         }
     };
+
     return tank;
 }
 
 function createHeroDude(scene) {
     // load the Dude 3D animated model
     // name, folder, skeleton name 
-    BABYLON.SceneLoader.ImportMesh("him", "models/Dude/", "Dude.babylon", scene, (newMeshes, particleSystems, skeletons) => {
+    // BABYLON.SceneLoader.ImportMesh("him", "models/Dude/", "Dude.babylon", scene, (newMeshes, particleSystems, skeletons) => {
+    let meshTask = scene.assetsManager.addMeshTask("Dude task", "him", "models/Dude/", "Dude.babylon");
+    meshTask.onSuccess = function (task) {
+        onDudeImported(task.loadedMeshes, task.loadedSkeletons);
+    };
+    function onDudeImported(newMeshes, skeletons) {
         let heroDude = newMeshes[0];
         heroDude.position = new BABYLON.Vector3(0, 0, 5);  // The original dude
         // make it smaller 
@@ -376,12 +417,12 @@ function createHeroDude(scene) {
         // here we've got only 1. 
         // animation parameters are skeleton, starting frame, ending frame,  a boolean that indicate if we're gonna 
         // loop the animation, speed, 
-        let a = scene.beginAnimation(skeletons[0], 0, 120, true, 1);
+        heroDude.animation = scene.beginAnimation(skeletons[0], 0, 120, true, 1);
         let hero = new Dude(heroDude, -1, 0.3, scene);
         hero.ellipsoid = new BABYLON.Vector3(10, 1, 10);
         // make clones
         scene.dudes = [];
-        for (let i = 0; i < 10; i++) {
+        for (let i = 0; i < 12; i++) {
             etat[i] = 0;
             scene.dudes[i] = doClone(heroDude, skeletons, i);
             scene.beginAnimation(scene.dudes[i].skeleton, 0, 120, true, 1);
@@ -393,13 +434,29 @@ function createHeroDude(scene) {
             // scene.dudes[i].checkCollisions = true;
             scene.dudes[i].ellipsoid = new BABYLON.Vector3(10, 1, 10);
         }
-    });
+        scene.dudes.unshift(heroDude);
+    }
 }
 
 function doClone(originalMesh, skeletons, id) {
     let myClone;
-    let xrand = Math.floor(Math.random() * 500 - 250);
-    let zrand = Math.floor(Math.random() * 500 - 250);
+    let xrand, zrand;
+    if (id < 3) { // 5 
+        xrand = Math.floor(Math.random() * (-205 - -490) + -490);
+        zrand = Math.floor(Math.random() * (490 - 220) + 220);
+    }
+    if (id >= 3 && id < 6) { // 6 
+        xrand = Math.floor(Math.random() * (490 - 80) + 80);
+        zrand = Math.floor(Math.random() * (490 - 220) + 220);
+    }
+    if (id >= 6 && id < 9) {
+        xrand = Math.floor(Math.random() * (490 - 250) + 250);
+        zrand = Math.floor(Math.random() * (-200 - -490) + -490);
+    }
+    if (id >= 9) {
+        xrand = Math.floor(Math.random() * (-250 - -490) + -490);
+        zrand = Math.floor(Math.random() * (-200 - -490) + -490);
+    }
     myClone = originalMesh.clone("clone_" + id);
     myClone.position = new BABYLON.Vector3(xrand, 0, zrand);
     if (!skeletons) return myClone;
@@ -413,7 +470,6 @@ function doClone(originalMesh, skeletons, id) {
             let clonedSkeleton = skeletons[0].clone("clone_" + id + "_skeleton");
             myClone.skeleton = clonedSkeleton;
             let nbChildren = myClone.getChildren().length;
-
             for (let i = 0; i < nbChildren; i++) {
                 myClone.getChildren()[i].skeleton = clonedSkeleton
             }
@@ -427,37 +483,6 @@ function doClone(originalMesh, skeletons, id) {
         }
     }
     return myClone;
-}
-
-function moveDude() {
-    for (var i = 0; i < scene.dudes.length; i++) {
-        // Faire un tour de terrain
-        if (i === 1 || i === 2) {
-            let tank = scene.getMeshByName("heroTank");
-            scene.dudes[i].Dude.faireUneRonde(etat[i], scene,tank);
-            etat[i] = scene.dudes[i].Dude.faireUneRonde(etat[i], scene,tank);
-        }
-        // Faire des aller retour
-        if (i === 0) {
-            let tank = scene.getMeshByName("heroTank");
-            scene.dudes[i].Dude.faireAllerRetour(etat[i], scene,tank);
-            etat[i] = scene.dudes[i].Dude.faireAllerRetour(etat[i], scene,tank);
-        }
-        // Marcher aléatoirement
-        if (i >= 3) {
-            cpt++;
-            if (cpt === 5000) {
-                getAleaXZ();
-                cpt = 0;
-            }
-            let tank = scene.getMeshByName("heroTank");
-            scene.dudes[i].Dude.bougerAleatoirement(etat[i], aleaX[i], aleaZ[i], scene,tank);
-        }
-        // Suit mon déplacement
-        // else {
-        //     scene.dudes[i].Dude.move(scene);
-        // }
-    }
 }
 
 window.addEventListener("resize", () => {

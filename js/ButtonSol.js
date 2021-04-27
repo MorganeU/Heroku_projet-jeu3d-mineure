@@ -52,6 +52,7 @@ export default class ButtonSol {
             }));
             button.actionManager.registerAction(new BABYLON.ExecuteCodeAction({ trigger: BABYLON.ActionManager.OnIntersectionExitTrigger, parameter: { mesh: scene.getMeshByName("box" + i) } }, function () {
                 wall.position.y -= 30;
+                if (wall.position.y < 50) { wall.position.y = 50; }
             }));
         }
 

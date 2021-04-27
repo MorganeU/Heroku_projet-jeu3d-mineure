@@ -26,11 +26,7 @@ export default class Dude {
         if (!this.bounder) return;
         // let's put the dude at the BBox position. in the rest of this
         // method, we will not move the dude but the BBox instead
-        // this.dudeMesh.position = new BABYLON.Vector3(this.bounder.position.x, this.bounder.position.y, this.bounder.position.z);
-        this.bounder.position.x = this.dudeMesh.position.x;
-        this.bounder.position.y = this.dudeMesh.position.y;
-        this.bounder.position.z = this.dudeMesh.position.z;
-
+        this.dudeMesh.position = new BABYLON.Vector3(this.bounder.position.x, this.bounder.position.y, this.bounder.position.z);
         // follow the tank
         let tank = scene.getMeshByName("heroTank");
         // let's compute the direction vector that goes from Dude to the tank
@@ -44,18 +40,47 @@ export default class Dude {
         this.dudeMesh.rotation.y = alpha;
         if (this.dudeMesh.position.y > 1) { this.dudeMesh.position.y = 1; }
         // // let make the Dude move towards the tank
-        if (distance > 15) {
+        if (distance > 15 && distance < 180) {
             //a.restart();   
-            this.dudeMesh.moveWithCollisions(dir.multiplyByFloats(this.speed, this.speed, this.speed));
-        }
-        else {
-            //a.pause();
-            // this.dudeMesh.position.y = 0
+            this.bounder.moveWithCollisions(dir.multiplyByFloats(this.speed, this.speed, this.speed));
         }
     };
 
+    // fait faire un tour de terrain, il se déplace en ronde en forme de carré
+    bougerAleatoirement(x, z, scene, tank, cpt) {
+        if (!this.bounder) return;
+        this.dudeMesh.position = new BABYLON.Vector3(this.bounder.position.x, this.bounder.position.y, this.bounder.position.z);
+        var verif;
+        let direction = tank.position.subtract(this.dudeMesh.position);
+        let distance = direction.length();
+        if (distance < 200) {
+            this.move(scene);
+            verif = 1;
+        }
+        else { verif = 0; }
+
+        if (verif === 0) {
+            if (cpt === 5000) {
+                this.bounder.position.x = this.dudeMesh.position.x;
+                this.bounder.position.y = this.dudeMesh.position.y;
+                this.bounder.position.z = this.dudeMesh.position.z;
+                let position = new BABYLON.Vector3(x, 1, z);
+                let direction = position.subtract(this.dudeMesh.position);
+                let distance = direction.length();
+                let dir = direction.normalize();
+                let alpha = Math.atan2(-dir.x, -dir.z);
+                this.dudeMesh.rotation.y = alpha;
+                if (distance > 5) {
+                    this.bounder.moveWithCollisions(dir.multiplyByFloats(this.speed, this.speed, this.speed));
+                }
+            }
+        }
+    }
+
     // fait faire des aller retour
     faireAllerRetour(ronde, scene, tank) {
+        if (!this.bounder) return;
+        this.dudeMesh.position = new BABYLON.Vector3(this.bounder.position.x, this.bounder.position.y, this.bounder.position.z);
         var verif;
         let direction = tank.position.subtract(this.dudeMesh.position);
         let distance = direction.length();
@@ -73,7 +98,7 @@ export default class Dude {
             let alpha = Math.atan2(-dir.x, -dir.z);
             this.dudeMesh.rotation.y = alpha;
             if (distance > 5) {
-                this.dudeMesh.moveWithCollisions(dir.multiplyByFloats(this.speed, this.speed, this.speed));
+                this.bounder.moveWithCollisions(dir.multiplyByFloats(this.speed, this.speed, this.speed));
                 return 0;
             }
             else {
@@ -88,7 +113,7 @@ export default class Dude {
             let alpha = Math.atan2(-dir.x, -dir.z);
             this.dudeMesh.rotation.y = alpha;
             if (distance > 5) {
-                this.dudeMesh.moveWithCollisions(dir.multiplyByFloats(this.speed, this.speed, this.speed));
+                this.bounder.moveWithCollisions(dir.multiplyByFloats(this.speed, this.speed, this.speed));
                 return 1;
             }
             else {
@@ -99,6 +124,8 @@ export default class Dude {
 
     // fait faire un tour de terrain, il se déplace en ronde en forme de carré
     faireUneRonde(ronde, scene, tank) {
+        if (!this.bounder) return;
+        this.dudeMesh.position = new BABYLON.Vector3(this.bounder.position.x, this.bounder.position.y, this.bounder.position.z);
         var verif;
         let direction = tank.position.subtract(this.dudeMesh.position);
         let distance = direction.length();
@@ -116,7 +143,7 @@ export default class Dude {
             let alpha = Math.atan2(-dir.x, -dir.z);
             this.dudeMesh.rotation.y = alpha;
             if (distance > 5) {
-                this.dudeMesh.moveWithCollisions(dir.multiplyByFloats(this.speed, this.speed, this.speed));
+                this.bounder.moveWithCollisions(dir.multiplyByFloats(this.speed, this.speed, this.speed));
                 return 0;
             }
             else {
@@ -131,7 +158,7 @@ export default class Dude {
             let alpha = Math.atan2(-dir.x, -dir.z);
             this.dudeMesh.rotation.y = alpha;
             if (distance > 5) {
-                this.dudeMesh.moveWithCollisions(dir.multiplyByFloats(this.speed, this.speed, this.speed));
+                this.bounder.moveWithCollisions(dir.multiplyByFloats(this.speed, this.speed, this.speed));
                 return 1;
             }
             else {
@@ -146,7 +173,7 @@ export default class Dude {
             let alpha = Math.atan2(-dir.x, -dir.z);
             this.dudeMesh.rotation.y = alpha;
             if (distance > 5) {
-                this.dudeMesh.moveWithCollisions(dir.multiplyByFloats(this.speed, this.speed, this.speed));
+                this.bounder.moveWithCollisions(dir.multiplyByFloats(this.speed, this.speed, this.speed));
                 return 2;
             }
             else {
@@ -161,35 +188,11 @@ export default class Dude {
             let alpha = Math.atan2(-dir.x, -dir.z);
             this.dudeMesh.rotation.y = alpha;
             if (distance > 5) {
-                this.dudeMesh.moveWithCollisions(dir.multiplyByFloats(this.speed, this.speed, this.speed));
+                this.bounder.moveWithCollisions(dir.multiplyByFloats(this.speed, this.speed, this.speed));
                 return 3;
             }
             else {
                 return 0;
-            }
-        }
-    }
-
-    // fait faire un tour de terrain, il se déplace en ronde en forme de carré
-    bougerAleatoirement(ronde, x, z, scene, tank) {
-        var verif;
-        let direction = tank.position.subtract(this.dudeMesh.position);
-        let distance = direction.length();
-        if (distance < 100) {
-            this.move(scene);
-            verif = 1;
-        }
-        else { verif = 0; }
-
-        if (ronde === 0 && verif === 0) {
-            let position = new BABYLON.Vector3(x, 1, z);
-            let direction = position.subtract(this.dudeMesh.position);
-            let distance = direction.length();
-            let dir = direction.normalize();
-            let alpha = Math.atan2(-dir.x, -dir.z);
-            this.dudeMesh.rotation.y = alpha;
-            if (distance > 5) {
-                this.dudeMesh.moveWithCollisions(dir.multiplyByFloats(this.speed, this.speed, this.speed));
             }
         }
     }
@@ -213,8 +216,6 @@ export default class Dude {
         BABYLON.ParticleHelper.CreateAsync("explosion", this.scene).then((set) => {
             set.systems.forEach((s) => {
                 s.emitter = this.bounder.position; // bug in ParticleHelper : y pos taken into account only by parts of the particles systems. ?
-                console.log(s.emitter)
-
                 s.disposeOnStop = true;
             });
             set.start();
@@ -258,7 +259,11 @@ export default class Dude {
         bounder.scaling.x = (max._x - min._x) * this.scaling;
         bounder.scaling.y = (max._y - min._y) * this.scaling * 2;
         bounder.scaling.z = (max._z - min._z) * this.scaling * 3;
-        bounder.isVisible = true;
+        bounder.isVisible = false;
         return bounder;
+    }
+
+    getBoundingBox() {
+        return this.bounder;
     }
 }
