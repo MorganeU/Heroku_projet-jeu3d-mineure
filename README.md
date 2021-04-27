@@ -27,6 +27,7 @@ Tentatives non abouties :
 # PROJET
 
 But du projet : Continuer le code du TP2-3D.
+Concept final du jeu 3D : Le jeu est un labyrinthe où il faut trouver un moyen de sortir tout en faisant attention à ce qui nous entoure.
 
 Améliorations : 
 - Class Wall créée, ajout de nouveaux murs
@@ -39,6 +40,5 @@ Améliorations :
 - La touche "t" permet d'afficher les flèches pour déplacer les box
 - La touche "y" permet de masquer les flèches pour déplacer les box
 - La touche "l" permet de tirer un laser
+- Si on se fait toucher on retourne au début
 
-Tentatives non abouties :
-- Les bounding box font bugger les Dudes 
