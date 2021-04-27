@@ -183,6 +183,12 @@ function createWalls(scene) {
     const panneauMaterial = new BABYLON.StandardMaterial("panneauM", scene);
     panneauMaterial.diffuseTexture = new BABYLON.Texture("images/panneau.PNG");
     panneau.material = panneauMaterial;
+    const Options2 = { width: 15, height: 7, depth: 3 };
+    const panneau2 = BABYLON.MeshBuilder.CreateBox("panneau", Options2, scene);
+    panneau2.position = new BABYLON.Vector3(20, 35, 193);
+    const panneauMaterial2 = new BABYLON.StandardMaterial("panneauM2", scene);
+    panneauMaterial2.diffuseTexture = new BABYLON.Texture("images/panneau.PNG");
+    panneau2.material = panneauMaterial2;
 }
 
 // boutons pour ouvrir les portes
@@ -333,7 +339,7 @@ function createTank(scene) {
             tank.frontVector = new BABYLON.Vector3(Math.sin(tank.rotation.y), 0, Math.cos(tank.rotation.y));
         }
         // le tank va plus vite si on appuie sur la touche Ctrl
-        if (scene.inputStates.ctrl) {
+        if (scene.inputStates.space) {
             tank.speed = 4;
         }
         if (scene.inputStates.ctrl === false) {
@@ -497,7 +503,6 @@ function modifySettings() {
     scene.inputStates.up = false;
     scene.inputStates.down = false;
     scene.inputStates.space = false;
-    scene.inputStates.ctrl = false;
     // scene.inputStates.monter = false;
     // scene.inputStates.descendre = false;
     scene.inputStates.laser = false;
@@ -511,8 +516,6 @@ function modifySettings() {
             scene.inputStates.right = true;
         } else if ((event.key === "ArrowDown") || (event.key === "s") || (event.key === "S")) {
             scene.inputStates.down = true;
-        } else if ((event.key === "Control")) {
-            scene.inputStates.ctrl = true;
         } else if (event.key === " ") {
             scene.inputStates.space = true;
         } else if ((event.key === "a") || (event.key === "A")) {
@@ -533,8 +536,6 @@ function modifySettings() {
             scene.inputStates.right = false;
         } else if ((event.key === "ArrowDown") || (event.key === "s") || (event.key === "S")) {
             scene.inputStates.down = false;
-        } else if (event.key === "Control") {
-            scene.inputStates.ctrl = false;
         } else if (event.key === " ") {
             scene.inputStates.space = false;
         } else if ((event.key === "a") || (event.key === "A")) {

@@ -20,7 +20,7 @@ Améliorations :
 - Les Dudes peuvent se déplacer en faisant des rondes
 - Les Dudes peuvent se déplacer de façon aléatoire
 - Création de box positionnées aléatoirement sur le sol
-- La touche "Ctrl" permet d'avancer plus vite
+- La touche "espace" permet d'avancer plus vite
 - La touche "a" permet de monter 
 - La touche "e" permet de descendre
 - des lights ont été ajoutées
