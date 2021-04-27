@@ -8,17 +8,6 @@ let engine;
 let scene;
 // vars for handling inputs
 let etat = [];
-let cpt = 0;
-
-// avoir un x et z aléatoires
-let aleaX = [];
-let aleaZ = [];
-function getAleaXZ() {
-    for (var i = 0; i < scene.dudes.length; i++) {
-        aleaX[i] = Math.round(Math.random() * (500 - (-500) + 1)) + (-500);
-        aleaZ[i] = Math.round(Math.random() * (500 - (-500) + 1)) + (-500);
-    }
-}
 
 window.onload = startGame;
 
@@ -102,14 +91,12 @@ function createGround(scene) {
     const groundOptions = { width: 1000, height: 1000, subdivisions: 2 };
     //scene is optional and defaults to the current scene
     const ground = BABYLON.MeshBuilder.CreateGround("gdhm", groundOptions, scene);
-    // const ground = BABYLON.MeshBuilder.CreateGroundFromHeightMap("gdhm", 'images/hmap1.png', groundOptions, scene);
     function onGroundCreated() {
         const groundMaterial = new BABYLON.StandardMaterial("groundMaterial", scene);
         groundMaterial.diffuseTexture = new BABYLON.Texture("images/motif4.png");
         ground.material = groundMaterial;
         // to be taken into account by collision detection
         ground.checkCollisions = true;
-        // groundMaterial.wireframe = true;
         ground.physicsImpostor = new BABYLON.PhysicsImpostor(ground, BABYLON.PhysicsImpostor.BoxImpostor, { mass: 0, restitution: 0.9 }, scene);
     }
     onGroundCreated();
@@ -294,10 +281,6 @@ function createFollowCamera(scene, target) {
     camera.rotationOffset = 180; // the viewing angle
     camera.cameraAcceleration = .1; // how fast to move
     camera.maxCameraSpeed = 5; // speed limit
-    // camera.ellipsoid = new BABYLON.Vector3(1, 1, 1);
-    // camera.collisionRadius = new BABYLON.Vector3(0.5, 0.5, 0.5);
-    // camera.checkCollisions = true;
-    // camera.attachControl(canvas, true);
     return camera;
 }
 
@@ -338,11 +321,11 @@ function createTank(scene) {
             tank.rotation.y += 0.02;
             tank.frontVector = new BABYLON.Vector3(Math.sin(tank.rotation.y), 0, Math.cos(tank.rotation.y));
         }
-        // le tank va plus vite si on appuie sur la touche Ctrl
+        // le tank va plus vite si on appuie sur la touche espace
         if (scene.inputStates.space) {
             tank.speed = 4;
         }
-        if (scene.inputStates.ctrl === false) {
+        if (scene.inputStates.space === false) {
             tank.speed = 1;
         }
         // le tank va s'envoler
@@ -406,7 +389,6 @@ function createTank(scene) {
 function createHeroDude(scene) {
     // load the Dude 3D animated model
     // name, folder, skeleton name 
-    // BABYLON.SceneLoader.ImportMesh("him", "models/Dude/", "Dude.babylon", scene, (newMeshes, particleSystems, skeletons) => {
     let meshTask = scene.assetsManager.addMeshTask("Dude task", "him", "models/Dude/", "Dude.babylon");
     meshTask.onSuccess = function (task) {
         onDudeImported(task.loadedMeshes, task.loadedSkeletons);
@@ -503,8 +485,8 @@ function modifySettings() {
     scene.inputStates.up = false;
     scene.inputStates.down = false;
     scene.inputStates.space = false;
-    // scene.inputStates.monter = false;
-    // scene.inputStates.descendre = false;
+    scene.inputStates.monter = false;
+    scene.inputStates.descendre = false;
     scene.inputStates.laser = false;
     //add the listener to the main, window object, and update the states
     window.addEventListener('keydown', (event) => {
