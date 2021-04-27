@@ -31,7 +31,7 @@ But du projet : Continuer le code du TP2-3D.
 Améliorations : 
 - Class Wall créée, ajout de nouveaux murs
 - Class Box créée, ajout de nouvelles box où l'on peut soit définir une position fixe soit une position aléatoire
-- Class ButtonSol créée, bouton au sol permettant de faire monter un mur quand on clique dessus ou que l'on monte dessus
+- Class ButtonSol créée, bouton au sol permettant d'ouvrir une porte quand on clique dessus ou que l'on monte dessus
 - Création de plusieurs pièces
 - Les box sont déplaçables
 - Les box sont soumises à la gravité
